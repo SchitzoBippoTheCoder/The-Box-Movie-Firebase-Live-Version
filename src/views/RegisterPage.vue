@@ -4,7 +4,7 @@
     </HeaderToMainMenu>
     <form @submit.prevent="checkLogin()" id="loginContainer">
         <label class="loginLabel">Email:</label>
-        <p @click="" id="loginWithGoogle">or register with Google</p>
+        <p @click="checkGoogleLogin" id="loginWithGoogle">or register with Google</p>
         <br>
         <input type="email" ref="username" placeholder="Email" class="userInput">
         <br>
@@ -33,7 +33,9 @@ import HeaderToMainMenu from "../components/HeaderToMainMenu.vue"
 import Footer from "../components/Footer.vue"
 import AlertBox from "../components/AlertBox.vue"
 import { auth } from "../firebase/index.js"
-import { createUserWithEmailAndPassword } from "@firebase/auth";
+import { createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "@firebase/auth";
+
+const provider = new GoogleAuthProvider();
 
 const username = ref("");
 const password = ref("");
@@ -79,6 +81,30 @@ function checkLogin() {
 
 function pushToLogin() {
     router.push('/login');
+}
+
+function checkGoogleLogin() {
+    signInWithPopup(auth, provider)
+        .then((result) => {
+            // This gives you a Google Access Token. You can use it to access the Google API.
+            const credential = GoogleAuthProvider.credentialFromResult(result);
+            const token = credential.accessToken;
+            // The signed-in user info.
+            const user = result.user;
+            // ...
+
+            router.push('/shopping-area');
+            
+        }).catch((error) => {
+            // Handle Errors here.
+            const errorCode = error.code;
+            const errorMessage = error.message;
+            // The email of the user's account used.
+            const email = error.customData.email;
+            // The AuthCredential type that was used.
+            const credential = GoogleAuthProvider.credentialFromError(error);
+            // ...
+        });
 }
 
 </script>
