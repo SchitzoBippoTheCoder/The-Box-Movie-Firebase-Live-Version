@@ -1,10 +1,13 @@
 <template>
   <div id="headerContainer">
-    <img src="../assets/TheBoxLogo.png" @click="check()"/>
+    <img src="../assets/TheBoxLogo.png" />
     <h1 id="title">{{ title }}</h1>
     <p id="tagline">{{ tagline }}</p>
-    <input type="search" id="searchBar" placeholder="Search Any Movie ..." autocomplete="off" ref="searchBar"
-      @change="displaySearchResults()" />
+    <p id="pageNumber">{{ pageNumber }}</p>
+    <input type="button" value="<" id="previousButton" @click="previousFunction()">
+    <input type="button" value=">" id="nextButton" @click="nextFunction()">
+    <input type="search" id="searchBar" placeholder="Search for Any Movie ..." autocomplete="off" ref="searchBar"
+      @keydown.enter="displaySearchResults(true)" />
     <input id="submitButton" type="button" :value="buttonValue" @click="pushToLogin()" />
   </div>
   <div></div>
@@ -13,17 +16,17 @@
 <script setup>
 import router from "../router";
 import axios from "axios";
-import { ref, isProxy, toRaw  } from "vue";
+import { ref, watch } from "vue";
 
 import { indexStore } from "../store/index.js";
 import { storeToRefs } from "pinia";
 
 const index = indexStore();
-const { searchOptions } = storeToRefs(index);
 
 const searchBar = ref();
 
-let sendOptions = [];
+let displayTotalPages;
+let pageNumber = ref(1);
 
 defineProps({
   title: String,
@@ -35,10 +38,27 @@ function pushToLogin() {
   router.push("/login");
 }
 
-function displaySearchResults() {
-  searchOptions.value = [];
+function previousFunction() {
+  if (pageNumber.value > 1)
+    pageNumber.value--;
 
-  let displayTotalPages;
+  console.log(pageNumber.value);
+
+  displaySearchResults(false);
+}
+
+function nextFunction() {
+  if (pageNumber.value < displayTotalPages)
+    pageNumber.value++;
+
+  console.log(pageNumber.value);
+
+  displaySearchResults(false);
+}
+
+function displaySearchResults(x) {
+  if (x === true)
+    pageNumber.value = 1;
 
   let searchParam = axios.get(
     `https://api.themoviedb.org/3/search/movie?api_key=e06cb446302dcf3a3cb1358720141aad&language=en-US&page=1&include_adult=false&query=${searchBar.value.value}`,
@@ -46,33 +66,24 @@ function displaySearchResults() {
   );
 
   let searchParamResult = searchParam.then((finalResult) => {
+    index.finishList();
+    index.clearResultOption();
+
     displayTotalPages = finalResult.data.total_pages;
 
-    for (let i = 1; i <= displayTotalPages; i++) {
-      index.addPageSearch();
-    }
+    let finalParam = axios.get(
+      `https://api.themoviedb.org/3/search/movie?api_key=e06cb446302dcf3a3cb1358720141aad&language=en-US&page=${pageNumber.value}&include_adult=false&query=${searchBar.value.value}`,
+      {}
+    );
 
-    for (let e = 1; e <= displayTotalPages; e++) {
-      let finalParam = axios.get(
-        `https://api.themoviedb.org/3/search/movie?api_key=e06cb446302dcf3a3cb1358720141aad&language=en-US&page=${e}&include_adult=false&query=${searchBar.value.value}`,
-        {}
-      );
-
-      let finalParamResult = finalParam.then((finalResult) => {
-        for (let o = 0; o < finalResult.data.results.length; o++) {
-          index.addResultToPageSearch(e - 1, finalResult.data.results[o].id);
-        }
-      });
-    }
+    let finalParamResult = finalParam.then((finalResult) => {
+      for (let o = 0; o < finalResult.data.results.length; o++) {
+        index.addResultOption(finalResult.data.results[o].id);
+      }
+    });
   });
-
-  console.log(searchOptions.value);
-  sendOptions = toRaw(searchOptions.value);
 }
 
-function check() {
-  console.log(sendOptions[0]);
-}
 </script>
 
 <style scoped>
@@ -82,10 +93,91 @@ body {
   padding: 0px;
 }
 
+#pageNumber {
+  position: absolute;
+
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  font-size: medium;
+  font-weight: bold;
+  color: white;
+
+  top: 18px;
+  right: 257px;
+}
+
+#nextButton {
+  position: absolute;
+
+  top: 31px;
+
+  outline: transparent;
+  border-color: transparent;
+
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  font-style: normal;
+  font-weight: bold;
+
+  background-color: black;
+  color: white;
+
+  height: 25px;
+  width: 40px;
+
+  right: 153px;
+
+  border-radius: 5px;
+
+  vertical-align: middle;
+  text-align: center;
+
+  padding-bottom: 5px;
+}
+
+#previousButton {
+  position: absolute;
+
+  top: 31px;
+
+  outline: transparent;
+  border-color: transparent;
+
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  font-style: normal;
+  font-weight: bold;
+
+  background-color: black;
+  color: white;
+
+  height: 25px;
+  width: 40px;
+
+  letter-spacing: 2px;
+  right: 200px;
+
+  border-radius: 5px;
+
+  vertical-align: middle;
+  text-align: center;
+
+  padding-bottom: 5px;
+}
+
+#previousButton:hover {
+  border-style: solid;
+  border-color: white;
+  border-width: 2px;
+}
+
+#nextButton:hover {
+  border-style: solid;
+  border-color: white;
+  border-width: 2px;
+}
+
 #searchBar {
   position: absolute;
 
-  right: 150px;
+  right: 280px;
 
   margin-top: 5px;
 

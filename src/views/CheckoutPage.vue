@@ -29,7 +29,7 @@
         <h3 id="checkoutHeader">Your Movie Box</h3>
         <p class="checkoutContent">{{ finalMovieLength }} total item(s)</p>
         <ul id="overflowBox">
-            <li class="checkoutContentList" v-for="option in finalMovieOptions" @click="">{{ option }}</li>
+            <li class="checkoutContentList" v-for="option in finalMovieOptions">{{ option }}</li>
         </ul>
         <hr id="line" />
         <br />

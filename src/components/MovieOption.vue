@@ -60,7 +60,7 @@ body {
 
     display: block;
 
-    margin: 25px 30px 30px 30px;
+    margin: 0px 30px 30px 30px;
 }
 
 #shoppingCartIcon {
@@ -71,7 +71,7 @@ body {
 
     position: absolute;
 
-    top: 33px;
+    top: 15px;
     left: 19px;
 
     box-shadow: 0px 5px 10px black;
