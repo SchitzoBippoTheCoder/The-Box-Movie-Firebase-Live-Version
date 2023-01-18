@@ -39,6 +39,9 @@ function pushToLogin() {
 }
 
 function previousFunction() {
+  if (pageNumber.value <= 1)
+    return;
+
   if (pageNumber.value > 1)
     pageNumber.value--;
 
@@ -48,6 +51,9 @@ function previousFunction() {
 }
 
 function nextFunction() {
+  if (pageNumber.value >= displayTotalPages)
+    return;
+
   if (pageNumber.value < displayTotalPages)
     pageNumber.value++;
 
